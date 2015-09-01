@@ -1,6 +1,7 @@
 import sublime, sublime_plugin
 import re
 import os.path
+import subprocess
 
 class Settings():
     view = None
@@ -58,5 +59,17 @@ class GenerateTestCommand(sublime_plugin.TextCommand):
                 dirname = os.path.dirname(test_fullpath)
 
                 subprocess.call(r'mkdir -p "%s"' % (dirname,), shell=True)
+
+                cmd = r'%s %s --verbose --bootstrap="%s" "%s" "%s" "%s" "%s"' % (
+                    skeleton_bin,
+                    'generate-test',
+                    bootstrap,
+                    class_name,
+                    current_file,
+                    class_name + "Test",
+                    test_fullpath
+                )
+
+                subprocess.call(cmd, shell=True, cwd=folder)
 
 
