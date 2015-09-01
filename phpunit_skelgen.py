@@ -47,4 +47,8 @@ class GenerateTestCommand(sublime_plugin.TextCommand):
 
         current_file = self.view.file_name()
 
+        for folder in folders:
+            if current_file.startswith(folder):
+                class_name = self.get_class_name(current_file)
+
 
