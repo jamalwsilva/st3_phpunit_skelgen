@@ -1,5 +1,6 @@
 import sublime, sublime_plugin
 import re
+import os.path
 
 class Settings():
     view = None
@@ -50,5 +51,12 @@ class GenerateTestCommand(sublime_plugin.TextCommand):
         for folder in folders:
             if current_file.startswith(folder):
                 class_name = self.get_class_name(current_file)
+
+                relative_path = current_file.replace(folder, '')
+                test_file = relative_path.replace('.php', 'Test.php')
+                test_fullpath = folder + '/' + tests_path + test_file
+                dirname = os.path.dirname(test_fullpath)
+
+                subprocess.call(r'mkdir -p "%s"' % (dirname,), shell=True)
 
 
