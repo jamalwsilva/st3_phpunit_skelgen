@@ -37,5 +37,14 @@ class GenerateTestCommand(sublime_plugin.TextCommand):
         return namespace + '\\' + class_name
 
     def run(self, edit):
-        pass
+        settings = Settings(self.view)
+
+        folders = self.view.window().folders()
+
+        skeleton_bin = settings.get('bin')
+        bootstrap = settings.get('bootstrap')
+        tests_path = settings.get('tests_path')
+
+        current_file = self.view.file_name()
+
 
