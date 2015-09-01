@@ -72,4 +72,7 @@ class GenerateTestCommand(sublime_plugin.TextCommand):
 
                 subprocess.call(cmd, shell=True, cwd=folder)
 
+                self.view.window().open_file(test_fullpath)
+
+
 
