@@ -20,3 +20,11 @@ class Settings():
         return self.settings.get(key)
 
 
+class GenerateTestCommand(sublime_plugin.TextCommand):
+
+    def get_class_name(self, current_file):
+        pass
+
+    def run(self, edit):
+        pass
+
