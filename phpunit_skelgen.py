@@ -4,7 +4,6 @@ import os.path
 import subprocess
 
 class Settings():
-    view = None
     settings = None
 
     def __init__(self, view):
