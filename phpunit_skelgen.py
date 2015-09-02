@@ -69,8 +69,11 @@ class GenerateTestCommand(sublime_plugin.TextCommand):
                     test_fullpath
                 )
 
-                subprocess.call(cmd, shell=True, cwd=folder)
+                # print and execute generated shell command
+                output = subprocess.check_output(cmd, shell=True, cwd=folder)
+                print(output.decode("utf-8"))
 
+                # open newly created file
                 self.view.window().open_file(test_fullpath)
 
 
