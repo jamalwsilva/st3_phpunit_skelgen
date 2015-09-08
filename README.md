@@ -27,7 +27,7 @@ git clone git@github.com:jamalwsilva/phpunit_skelgen.git
 }
 ```
 
-### Ragister keyboard combination to invoke generate_test command:
+### Register keyboard combination to invoke generate_test command:
 - open "Preferences" => "Key bindings - User" and add:
 ```
 [
