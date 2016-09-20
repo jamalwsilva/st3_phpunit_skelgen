@@ -21,7 +21,8 @@ git clone git@github.com:jamalwsilva/phpunit_skelgen.git
         "phpunit_skelgen": {
             "bin": "/usr/local/bin/phpunit-skelgen",
             "bootstrap": "vendor/autoload.php",
-            "tests_path": "tests/phpunit/"
+            "tests_path": "tests/phpunit/",
+            "base_path": "if/needed/"
         }
     }
 }
