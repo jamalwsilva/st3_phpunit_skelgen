@@ -1,7 +1,9 @@
-import sublime, sublime_plugin
+import sublime
+import sublime_plugin
 import re
 import os.path
 import subprocess
+
 
 class Settings():
     """
@@ -15,7 +17,9 @@ class Settings():
         """
         Loads plugin and project specific settings
         """
-        self.settings = sublime.load_settings('phpunit_skelgen.sublime-settings')
+        settings_key = 'phpunit_skelgen.sublime-settings'
+
+        self.settings = sublime.load_settings(settings_key)
         self.project_settings = {}
 
         if sublime.active_window() is not None:
@@ -51,17 +55,26 @@ class GenerateTestCommand(sublime_plugin.TextCommand):
 
         Open the console and run 'view.file_name()' to know the current file.
         """
-        region = sublime.Region(0, self.view.size())
-        contents = self.view.substr(region)
         handle = open(current_file, "r")
         lines = handle.readlines()
 
-        pn = re.compile(r'^namespace\s+([^\s|;]+)')
-        pc = re.compile(r'^class\s+(\S+)')
-        namespace = [ pn.match(line).group(1) for line in lines if pn.match(line) ].pop()
-        class_name = [ pc.match(line).group(1) for line in lines if pc.match(line) ].pop()
+        pn = re.compile(r'^namespace\s+([^;]+)')
+        pc = re.compile(r'^(?:abstract )?class\s+(\S+)')
+        namespace_matches = [
+            pn.match(line).group(1) for line in lines if pn.match(line)
+        ]
+        class_name_matches = [
+            pc.match(line).group(1) for line in lines if pc.match(line)
+        ]
 
-        return namespace + '\\' + class_name
+        if namespace_matches and class_name_matches:
+            namespace = namespace_matches.pop()
+            class_name = class_name_matches.pop()
+            return namespace + '\\' + class_name
+
+        if class_name_matches:
+            class_name = class_name_matches.pop()
+            return class_name.pop()
 
     def run(self, edit):
         """
@@ -71,6 +84,7 @@ class GenerateTestCommand(sublime_plugin.TextCommand):
 
         folders = self.view.window().folders()
 
+        base_path = settings.get('base_path') or ""
         skeleton_bin = settings.get('bin')
         bootstrap = settings.get('bootstrap')
         tests_path = settings.get('tests_path')
@@ -85,13 +99,15 @@ class GenerateTestCommand(sublime_plugin.TextCommand):
                 # create dir tree before trying to write test file
                 relative_path = current_file.replace(folder, '')
                 test_file = relative_path.replace('.php', 'Test.php')
-                test_fullpath = folder + '/' + tests_path + test_file
+                stripped = re.sub(base_path, '', test_file)
+                test_fullpath = folder + '/' + tests_path + stripped
                 dirname = os.path.dirname(test_fullpath)
 
                 subprocess.call(r'mkdir -p "%s"' % (dirname,), shell=True)
 
                 # render phpunit-skelgen command
-                cmd = r'%s %s --verbose --bootstrap="%s" "%s" "%s" "%s" "%s"' % (
+                command_format = self.get_command_format()
+                cmd = command_format % (
                     skeleton_bin,
                     'generate-test',
                     bootstrap,
@@ -102,11 +118,16 @@ class GenerateTestCommand(sublime_plugin.TextCommand):
                 )
 
                 # print and execute generated shell command
-                output = subprocess.check_output(cmd, shell=True, cwd=folder)
+                output = subprocess.check_output(
+                    cmd, shell=True, cwd=folder + '/' + base_path
+                )
                 print(output.decode("utf-8"))
 
                 # open newly created file
                 self.view.window().open_file(test_fullpath)
 
-
-
+    def get_command_format(self):
+        """
+        Return skelgen command format
+        """
+        return r'%s %s --verbose --bootstrap="%s" "%s" "%s" "%s" "%s"'
